@@ -21,39 +21,31 @@ RUN apt-get update && apt-get upgrade -y \
         build-essential $cxx_package libsqlite3-dev libcurl4-openssl-dev libssl-dev \
         libxml2-dev libstfl-dev libjson-c-dev libncursesw5-dev gettext git \
         pkg-config zlib1g-dev asciidoctor wget \
-    && apt-get autoremove \
-    && apt-get clean \
-	&& apt-get install locales \
-    && echo 'en_US.UTF-8 UTF-8' >> /etc/locale.gen \
-    && locale-gen \
 	&& wget -O ./rustup.sh --secure-protocol=TLSv1_2 https://sh.rustup.rs \
     && chmod +x ./rustup.sh \
     && ./rustup.sh -y \
         --default-host x86_64-unknown-linux-gnu \
         --default-toolchain $rust_version \
-	&& git clone https://github.com/newsboat/newsboat.git && cd /newsboat && git checkout $NEWSBOAT_VERSION \
-	&& make -j9 \
-	&& mv /newsboat/newsboat /usr/local/bin \
-	&& rm -rf /root/.rustup \
-	&& rm -rf /root/.cargo \
-	&& rm -rf /newsboat \
-	&& apt-get remove -y $cxx_package build-essential asciidoctor pkg-config git \
-	&& apt-get autoremove -y && apt-get clean
-
+	&& git clone https://github.com/newsboat/newsboat.git \
+	&& cd /newsboat && git checkout $NEWSBOAT_VERSION \
+	&& make -j9
 
 FROM ubuntu:20.10
 
-COPY --from=base /usr/local/bin/newsboat /usr/local/bin/
+COPY --from=base /newsboat/newsboat /usr/local/bin/
+
+# dependencies to run newsboat and scripts
+RUN apt-get update && apt-get install -y \
+	curl jq python3 netbase libxml2 \
+	sqlite3 libstfl0 libjson-c-dev wget \
+	&& apt-get install locales \
+    && echo 'en_US.UTF-8 UTF-8' >> /etc/locale.gen \
+    && locale-gen
 
 ENV HOME /home/user
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
-
-# dependencies to run newsboat and scripts
-RUN apt-get update && apt-get install -y \
-	curl jq python3 netbase libxml2 \
-	sqlite3 libstfl0 libjson-c-dev
 
 RUN groupadd --gid 1000 user \
 	&& useradd --uid 1000 --gid 1000 --home $HOME --create-home user \
