@@ -1,4 +1,4 @@
-FROM ubuntu:20.10
+FROM ubuntu:20.10 AS base
 
 # adaption from https://github.com/newsboat/newsboat/blob/master/docker/ubuntu_20.04-build-tools.dockerfile
 
@@ -40,17 +40,26 @@ RUN apt-get update && apt-get upgrade -y \
 	&& apt-get remove -y $cxx_package build-essential asciidoctor pkg-config git \
 	&& apt-get autoremove -y && apt-get clean
 
-RUN apt-get install -y curl jq python3
 
+FROM ubuntu:20.10
+
+COPY --from=base /usr/local/bin/newsboat /usr/local/bin/
+
+ENV HOME /home/user
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
 
-ENV HOME /home/user
+# dependencies to run newsboat and scripts
+RUN apt-get update && apt-get install -y \
+	curl jq python3 netbase libxml2 \
+	sqlite3 libstfl0 libjson-c-dev
+
 RUN groupadd --gid 1000 user \
 	&& useradd --uid 1000 --gid 1000 --home $HOME --create-home user \
 	&& chown -R user:user $HOME
 
 WORKDIR $HOME
 USER user
+
 ENTRYPOINT ["/usr/local/bin/newsboat"]
