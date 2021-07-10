@@ -36,8 +36,9 @@ COPY --from=base /newsboat/newsboat /usr/local/bin/
 
 # dependencies to run newsboat and scripts
 RUN apt-get update && apt-get install -y \
-	curl jq python3 netbase libxml2 \
+	curl jq python3 netbase libxml2 python3-pip \
 	sqlite3 libstfl0 libjson-c-dev wget \
+	&& pip install --no-cache-dir requests beautifulsoup4 \
 	&& apt-get install locales \
     && echo 'en_US.UTF-8 UTF-8' >> /etc/locale.gen \
     && locale-gen
