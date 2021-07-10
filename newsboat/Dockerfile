@@ -2,12 +2,12 @@ FROM ubuntu:20.10 AS base
 
 # adaption from https://github.com/newsboat/newsboat/blob/master/docker/ubuntu_20.04-build-tools.dockerfile
 
-ARG NEWSBOAT_VERSION=r2.22
+ARG NEWSBOAT_VERSION=r2.24
 
 ARG cc=gcc-10
 ARG cxx=g++-10
 ARG cxx_package=g++-10
-ARG rust_version=1.48.0
+ARG rust_version=1.53.0
 
 ENV CC=$cc
 ENV CXX=$cxx
